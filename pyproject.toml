@@ -1,0 +1,13 @@
+[project]
+name = "rmp-dashboard"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "bs4>=0.0.2",
+    "chromedriver-binary-auto>=0.3.1",
+    "pandas>=2.2.3",
+    "selenium>=4.30.0",
+    "tqdm>=4.67.1",
+]
