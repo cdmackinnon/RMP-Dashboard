@@ -53,3 +53,31 @@ class ProfessorScraper:
             f.write(self.driver.page_source)
 
         print(f"Page source saved to {output_file}")
+    def quit(self):
+        """Closes the WebDriver."""
+        self.driver.quit()
+
+    @staticmethod
+    def parse_professors(file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        soup = BeautifulSoup(html_content, "html.parser")
+        professors = []
+
+        for card in soup.find_all("div", class_="TeacherCard__CardInfo-syjs0d-1"):
+            try:
+                name = card.find("div", class_="CardName__StyledCardName-sc-1gyrgim-0").text
+                department = card.find("div", class_="CardSchool__Department-sc-19lmz2k-0").text
+                school = card.find("div", class_="CardSchool__School-sc-19lmz2k-1").text
+                quality = card.find_next("div", class_="CardNumRating__CardNumRatingNumber-sc-17t4b9u-2").text
+                num_ratings = card.find_next("div", class_="CardNumRating__CardNumRatingCount-sc-17t4b9u-3").text.split()[0]
+                would_take_again = card.find("div", class_="CardFeedback__CardFeedbackNumber-lq6nix-2").text.strip('%')
+                difficulty = card.find_all("div", class_="CardFeedback__CardFeedbackNumber-lq6nix-2")[1].text
+
+                professors.append([name, department, school, quality, num_ratings, would_take_again, difficulty])
+            except AttributeError:
+                continue
+
+        df = pd.DataFrame(professors, columns=["Name", "Department", "School", "Quality", "# of Ratings", "Would Take Again (%)", "Difficulty"])
+        return df
