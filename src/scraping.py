@@ -53,6 +53,25 @@ class ProfessorScraper:
             f.write(self.driver.page_source)
 
         print(f"Page source saved to {output_file}")
+    
+    def fetch_school_name(self, id) -> str:
+        """
+        Fetches a school's name from a given page. Takes a page id as an input.
+        """
+        url = f"https://www.ratemyprofessors.com/search/professors/{id}?q=*"
+        try:
+            self.driver.get(url)
+        except:
+            return None
+        try:
+            header = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//h1[@data-testid='pagination-header-main-results']"))
+            )
+            # The 3rd word and onwards are the college's name
+            return ' '.join(header.text.split()[3:])
+        except:
+            return None
+
     def quit(self):
         """Closes the WebDriver."""
         self.driver.quit()
