@@ -1,6 +1,7 @@
 from flask import Flask, render_template, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
+from src.seeding import seed_schools_table
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///rmp.db'
@@ -16,15 +17,15 @@ def initialize_database(app):
 
 @app.route('/')
 def index():
-    # Query the database to get column names of the 'schools' table
     with db.engine.connect() as connection:
-        result = connection.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name = 'schools'"))
-    column_names = [row[0] for row in result]
+        result = connection.execute(text("SELECT school_name, school_id FROM schools"))
+    schools = [{"school_name": row[0], "school_id": row[1]} for row in result]
 
-    # Pass the column names to the template
-    return render_template("index.html", column_names=column_names)
+    return render_template("index.html", schools=schools)
 
 if __name__ == "__main__":
     initialize_database(app)
+    with app.app_context():
+        seed_schools_table(db.engine.connect())
     app.run(debug=True, port=8080)
 

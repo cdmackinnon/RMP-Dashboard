@@ -8,11 +8,14 @@
 {% block body%}
 <h1>Body Stuff</h1>
 
-<ul>
-    {% for column in column_names %}
-      <li>{{ column }}</li>
+<form method="GET" action="/search">
+  <label for="school-select">Select a school:</label>
+  <select id="school-select" name="school_id" onchange="this.form.submit()">
+    <option value="" disabled selected>Choose a school</option>
+    {% for school in schools|sort(attribute='school_name') %}
+    <option value="{{ school.school_id }}">{{ school.school_name }}</option>
     {% endfor %}
-  </ul>
-
+  </select>
+</form>
 
 {% endblock %}
