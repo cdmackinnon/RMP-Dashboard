@@ -9,6 +9,9 @@ import pandas as pd
 
 
 class ProfessorScraper:
+    """
+    # TODO Type Hints and Docstrings
+    """
     def __init__(self, headless=True):
         options = Options()
         if headless:
@@ -43,7 +46,9 @@ class ProfessorScraper:
                 break
 
     def read_page_source(self, url, output_file):
-        """Main function to scrape professor data from a school page."""
+        """
+        Main function to scrape professor data from a school page.
+        """
         self.driver.get(url)
         total_professors = self.get_total_professors()
         print(f"Total professors: {total_professors}")
@@ -53,6 +58,7 @@ class ProfessorScraper:
             f.write(self.driver.page_source)
 
         print(f"Page source saved to {output_file}")
+        self.quit()
     
     def fetch_school_name(self, id) -> str:
         """
