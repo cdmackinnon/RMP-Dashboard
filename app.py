@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
-from src.seeding import seeding
+from src.seeding import Seeding
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///rmp.db'
@@ -24,7 +24,8 @@ def index():
 if __name__ == "__main__":
     initialize_database(app)
     with app.app_context():
-        seeding = seeding(db.engine.connect())
+        seeding = Seeding(db.engine.connect())
         seeding.initialize_school_names()
+        seeding.seed_existing_data()
     app.run(debug=True, port=8080)
-
+    

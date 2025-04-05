@@ -1,6 +1,7 @@
 from src.scraping import ProfessorScraper
 import json
 
+
 def main():
     get_university_names()
 
