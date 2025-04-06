@@ -1,96 +1,27 @@
 import json
-import os
+from pathlib import Path
 from sqlalchemy.sql import text
 from bs4 import BeautifulSoup
-import pandas as pd
+import tqdm
+import polars as pl
 
-SCHOOLS_PATH = os.path.join(os.path.dirname(__file__), "../data/schools")
+# SCHOOLS_PATH = os.path.join(os.path.dirname(__file__), "../data/dataframes")
 
 
 class Seeding:
     def __init__(self, db_connection: str):
         self.db_connection = db_connection
 
-    def parse_professors(self, file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            html_content = f.read()
-
-        soup = BeautifulSoup(html_content, "html.parser")
-        professors = []
-
-        # identify every professor card, extract data, and append it to the list of professors
-        for card in soup.find_all("div", class_="TeacherCard__CardInfo-syjs0d-1"):
-            try:
-                name = card.find("div", class_="CardName__StyledCardName-sc-1gyrgim-0")
-                name = name.text if name else "N/A"
-
-                department = card.find(
-                    "div", class_="CardSchool__Department-sc-19lmz2k-0"
-                )
-                department = department.text if department else "N/A"
-
-                school = card.find("div", class_="CardSchool__School-sc-19lmz2k-1")
-                school = school.text if school else "N/A"
-
-                quality = card.find_next(
-                    "div", class_="CardNumRating__CardNumRatingNumber-sc-17t4b9u-2"
-                )
-                quality = quality.text if quality else "N/A"
-
-                num_ratings = card.find_next(
-                    "div", class_="CardNumRating__CardNumRatingCount-sc-17t4b9u-3"
-                )
-                num_ratings = num_ratings.text.split()[0] if num_ratings else "0"
-
-                would_take_again = card.find(
-                    "div", class_="CardFeedback__CardFeedbackNumber-lq6nix-2"
-                )
-                would_take_again = (
-                    would_take_again.text.strip("%") if would_take_again else "N/A"
-                )
-
-                difficulty = card.find_all(
-                    "div", class_="CardFeedback__CardFeedbackNumber-lq6nix-2"
-                )
-                difficulty = difficulty[1].text if len(difficulty) > 1 else "N/A"
-
-                professors.append(
-                    [
-                        name,
-                        department,
-                        school,
-                        quality,
-                        num_ratings,
-                        would_take_again,
-                        difficulty,
-                    ]
-                )
-
-            except AttributeError as e:
-                print(f"Error reading teacher card: {e}")
-                continue
-
-        df = pd.DataFrame(
-            professors,
-            columns=[
-                "Name",
-                "Department",
-                "School",
-                "Quality",
-                "# of Ratings",
-                "Would Take Again (%)",
-                "Difficulty",
-            ],
-        )
-        return df
-
     def initialize_school_names(self):
-        names = os.path.join(os.path.dirname(__file__), "../data/school_names.json")
-        with open(names, "r") as file:
+        # names = os.path.join(os.path.dirname(__file__), "../data/school_names.json")
+        school_names_path = Path(__file__).parent.parent / "data/school_names.json"
+        with open(school_names_path, "r") as file:
             school_data = json.load(file)
 
         # Schools with scraped data
-        files = os.listdir(SCHOOLS_PATH)
+        # files = os.listdir(os.path.join(os.path.dirname(__file__), "../data/schools"))
+        school_html_path = Path(__file__).parent.parent / "data/schools"
+        files = [f.name for f in school_html_path.iterdir() if f.is_file()]
 
         with self.db_connection.begin():
             for school_id, name in school_data.items():
@@ -108,18 +39,24 @@ class Seeding:
                     )
 
     def seed_existing_data(self):
-        # glob to get all the files in the directory
-        files = os.listdir(SCHOOLS_PATH)
-        for file in files:
-            if file == ".DS_Store":
+        # SCHOOLS_PATH = "/Users/connormackinnon/Desktop/Automations and workflows/RMP/RMP-Dashboard/data/dataframes"
+        dataframes_path = Path(__file__).parent.parent / "data/dataframes"
+        files = [f for f in dataframes_path.iterdir() if f.is_file()]
+        # files = os.listdir(dataframes_path)
+        for file in tqdm.tqdm(files, desc="Seeding files into database"):
+            if not file.suffix == ".parquet":
                 continue
-            df = self.parse_professors(os.path.join(SCHOOLS_PATH, file))
 
-            # insert into the database
+            # dataframes_path
+            # os.path.join(SCHOOLS_PATH, file)
+            df = pl.read_parquet(file)
+
             with self.db_connection.begin():
-                df.replace("N/A", None, inplace=True)
-                for index, row in df.iterrows():
-                    # Insert department if not exists and return department_id
+                for row in df.iter_rows(named=True):
+                    department = row["Department"]
+                    school = row["School"]
+
+                    # Insert department if not exists, or get existing id
                     department_id = self.db_connection.execute(
                         text(
                             """
@@ -127,12 +64,11 @@ class Seeding:
                             VALUES (:department_name)
                             ON CONFLICT (department_name) DO NOTHING
                             RETURNING department_id
-                            """
+                        """
                         ),
-                        {"department_name": row["Department"]},
+                        {"department_name": department},
                     ).scalar()
 
-                    # If department_id is None, fetch existing department_id
                     if department_id is None:
                         department_id = self.db_connection.execute(
                             text(
@@ -140,24 +76,23 @@ class Seeding:
                                 SELECT department_id
                                 FROM Departments
                                 WHERE department_name = :department_name
-                                """
+                            """
                             ),
-                            {"department_name": row["Department"]},
+                            {"department_name": department},
                         ).scalar()
 
-                    # Retrieve school ID from Schools
+                    # Get school ID
                     school_id = self.db_connection.execute(
                         text(
                             """
                             SELECT school_id
                             FROM Schools
                             WHERE school_name = :school_name
-                            """
+                        """
                         ),
-                        {"school_name": row["School"]},
+                        {"school_name": school},
                     ).scalar()
 
-                    # Ensure school_id is valid then insert the instructor
                     if school_id is not None:
                         self.db_connection.execute(
                             text(
@@ -179,7 +114,7 @@ class Seeding:
                                     :retake_percent,
                                     :difficulty
                                 )
-                                """
+                            """
                             ),
                             {
                                 "instructor_name": row["Name"],

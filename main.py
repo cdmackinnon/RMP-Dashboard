@@ -1,9 +1,11 @@
 from src.scraping import ProfessorScraper
+from src.parse_professors import parse_all
 import json
 
 
 def main():
-    get_university_names()
+    # get_university_names()
+    parse_all("data/schools/")
 
 
 def get_university_names():
