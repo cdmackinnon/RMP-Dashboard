@@ -48,12 +48,7 @@ class ProfessorScraper:
                         (By.XPATH, "//button[contains(text(), 'Show More')]")
                     )
                 )
-                button.click()
-                WebDriverWait(self.driver, 5).until(
-                    EC.presence_of_element_located(
-                        (By.XPATH, "//div[contains(@class, 'ProfessorCard')]")
-                    )
-                )
+                self.driver.execute_script("arguments[0].click();", button)
             except Exception:
                 break
 

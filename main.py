@@ -4,8 +4,13 @@ import json
 
 
 def main():
+    # Test Scrape
+    # test = ProfessorScraper()
+    # url = "https://www.ratemyprofessors.com/search/professors/1095?q="
+    # test.read_page_source(url, "University of Denver")
+
     # get_university_names()
-    parse_all("data/schools/")
+    # parse_all("data/schools/new")
 
 
 def get_university_names():

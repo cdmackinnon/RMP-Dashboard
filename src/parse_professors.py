@@ -45,6 +45,7 @@ def parse_professors(file_path):
             difficulties.append(diff[1].text if len(diff) > 1 else None)
 
         except AttributeError:
+            # TODO we can't just continue, but also we can't afford to not continue
             continue
 
     # Create Polars DataFrame
