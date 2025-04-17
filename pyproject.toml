@@ -5,9 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "black>=25.1.0",
     "bs4>=0.0.2",
     "chromedriver-binary-auto>=0.3.1",
+    "flask>=3.1.0",
+    "flask-sqlalchemy>=3.1.1",
     "pandas>=2.2.3",
+    "polars>=1.26.0",
+    "psycopg2>=2.9.10",
+    "pylint>=3.3.6",
     "selenium>=4.30.0",
     "tqdm>=4.67.1",
 ]
