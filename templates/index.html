@@ -1,21 +1,42 @@
 {% extends "base.html" %}
 
-{% block head%}
-<h1>Header Stuff</h1>
-
+{% block head %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 {% endblock %}
 
-{% block body%}
-<h1>Body Stuff</h1>
+{% block body %}
+  <h2>Average Instructor Ratings by School</h2>
 
-<form method="GET" action="/search">
-  <label for="school-select">Select a school:</label>
-  <select id="school-select" name="school_id" onchange="this.form.submit()">
-    <option value="" disabled selected>Choose a school</option>
-    {% for school in schools|sort(attribute='school_name') %}
-    <option value="{{ school.school_id }}">{{ school.school_name }}</option>
-    {% endfor %}
-  </select>
-</form>
+  <input
+    id="school-search"
+    placeholder="Type a university name..."
+    style="width: 300px; padding: 8px;"
+  />
+
+  <div id="plot" style="width:100%;max-width:900px;margin:auto; padding-top: 40px;"></div>
+
+  <script>
+    $(function () {
+      $("#school-search").autocomplete({
+        source: "/autocomplete",
+        minLength: 2,
+        select: function (event, ui) {
+          const schoolName = ui.item.value;
+          console.log("User selected:", schoolName);
+
+          $.getJSON("/school_plot", { school_name: schoolName }, function (data) {
+            if (data.graphJSON) {
+              const plotData = JSON.parse(data.graphJSON);
+              Plotly.newPlot("plot", plotData.data, plotData.layout);
+            } else {
+              $("#plot").html("<p>No data available for this school.</p>");
+            }
+          });
+        }
+      });
+    });
+  </script>
+
+
 
 {% endblock %}
