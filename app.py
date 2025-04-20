@@ -18,6 +18,16 @@ def initialize_database(app):
             db.session.commit()
 
 
+def user_scrape_request(id: int) -> None:
+    """
+    Scrapes a single university and adds the parquet to the data directory
+    Input: id from the SCHOOL table in the database.
+    """
+    pass
+    # todo use the scraping file pass it in, get html, make parquet, delete html
+    # Consdier returning the full html file or storing or retriveung or whatever ... SPEED
+
+
 @app.route("/")
 def index():
     with db.engine.connect() as connection:
@@ -25,6 +35,23 @@ def index():
     schools = [{"school_name": row[0], "school_id": row[1]} for row in result]
     return render_template("index.html", schools=schools)
 
+
+# TODO implement a way to rescrape all the schools names
+# This visits 8000 URLs to retrieve the (name, id) combos
+# def get_university_names():
+#     NUM_UNIVERSITIES = 8000
+#     school_data = {}
+#     test = ProfessorScraper()
+
+#     for id in range(1, NUM_UNIVERSITIES):
+#         name = test.fetch_school_name(id)
+#         # Store only if a valid name is found
+#         if name and name != "other schools":
+#             school_data[id] = name
+
+#     # Save dictionary to JSON file
+#     with open("data/school_names.json", "w") as f:
+#         json.dump(school_data, f, indent=4)
 
 if __name__ == "__main__":
     initialize_database(app)

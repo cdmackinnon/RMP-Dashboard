@@ -11,6 +11,7 @@ def main():
 
     # get_university_names()
     # parse_all("data/schools/new")
+    pass
 
 
 def get_university_names():
