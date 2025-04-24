@@ -66,13 +66,15 @@ class Seeding:
             self.seed_file(file)
 
     def seed_file(self, file: Path):
+        return self.seed_dataframe(pl.read_parquet(file))
+
+    def seed_dataframe(self, df: pl.DataFrame) -> None:
         """
         Seed a file into the database.
         Fails if the university name is not recognized
 
         Input: path to a parquet file
         """
-        df = pl.read_parquet(file)
 
         # Retrieving schools id's and their corresponding names
         school_names = self.get_school_names()
@@ -154,3 +156,4 @@ class Seeding:
             """
             )
             self.db_connection.execute(insert_statement, pending_instructors)
+            self.db_connection.commit()
