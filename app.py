@@ -1,7 +1,10 @@
+import json
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 from src.seeding import Seeding
+from src.scraping import ProfessorScraper
+from pathlib import Path
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///rmp.db"

@@ -23,12 +23,7 @@ class Seeding:
         Initializes university names and ids.
         Uses a JSON file containing this prescrapped information.
         """
-        # Open the JSON file of all RMP university names
-        # Contains names and ids between 1 and 8000 from rate my professor URLs
-        # I.e. "https://www.ratemyprofessors.com/search/professors/{SCHOOL_ID_NUMBER}?q="
-        school_names_path = Path(__file__).parent.parent / "data/school_names.json"
-        with open(school_names_path, "r") as file:
-            school_data = json.load(file)
+        school_data = self.get_school_names()
 
         with self.db_connection.begin():
             for school_id, name in school_data.items():
@@ -42,6 +37,18 @@ class Seeding:
                     ),
                     {"school_id": int(school_id), "school_name": name},
                 )
+
+    def get_school_names(self) -> dict:
+        """
+        Returns a dictionary of all rate my professor school id and their names
+        """
+        # Open the JSON file of all RMP university names
+        # Contains names and ids between 1 and 8000 from rate my professor URLs
+        # I.e. "https://www.ratemyprofessors.com/search/professors/{SCHOOL_ID_NUMBER}?q="
+        school_names_path = Path(__file__).parent.parent / "data/school_names.json"
+        with open(school_names_path, "r", encoding="UTF-8") as file:
+            school_data = json.load(file)
+        return school_data
 
     def seed_existing_data(self):
         """
@@ -58,32 +65,49 @@ class Seeding:
             # TODO check runtime for these extra function calls
             self.seed_file(file)
 
-    # TODO Type hint the parquet file
-    def seed_file(self, file):
+    def seed_file(self, file: Path):
         """
         Seed a file into the database.
         Fails if the university name is not recognized
 
-        Input: parquet file
+        Input: path to a parquet file
         """
         df = pl.read_parquet(file)
 
-        with self.db_connection.begin():
-            for row in df.iter_rows(named=True):
-                department = row["Department"]
-                school = row["School"]
+        # Retrieving schools id's and their corresponding names
+        school_names = self.get_school_names()
+        # Flipping the id name mapping
+        school_id_mapping = {val: int(key) for key, val in school_names.items()}
 
-                # Insert department if not exists, or get existing id
+        # Storing the department ids to avoid duplicate inserts and faster retrieval
+        department_cache = {}
+        # Storing the instructors to be inserted for bulk insert
+        pending_instructors = []
+
+        for row in df.iter_rows(named=True):
+            department_name = row["Department"]
+            school_name = row["School"]
+
+            # Match school name to school_id (already inserted in DB)
+            school_id = school_id_mapping.get(school_name)
+            if not school_id:
+                print(
+                    f"Skipping instructor {row['Name']} — unknown school: {school_name}"
+                )
+                continue
+
+            # Check department cache or insert if new
+            if department_name not in department_cache:
                 department_id = self.db_connection.execute(
                     text(
                         """
                         INSERT INTO Departments (department_name)
-                        VALUES (:department_name)
+                        VALUES (:name)
                         ON CONFLICT (department_name) DO NOTHING
                         RETURNING department_id
                     """
                     ),
-                    {"department_name": department},
+                    {"name": department_name},
                 ).scalar()
 
                 if department_id is None:
@@ -92,59 +116,41 @@ class Seeding:
                             """
                             SELECT department_id
                             FROM Departments
-                            WHERE department_name = :department_name
+                            WHERE department_name = :name
                         """
                         ),
-                        {"department_name": department},
+                        {"name": department_name},
                     ).scalar()
 
-                # Get school ID
-                school_id = self.db_connection.execute(
-                    text(
-                        """
-                        SELECT school_id
-                        FROM Schools
-                        WHERE school_name = :school_name
-                    """
-                    ),
-                    {"school_name": school},
-                ).scalar()
+                department_cache[department_name] = department_id
 
-                if school_id is not None:
-                    self.db_connection.execute(
-                        text(
-                            """
-                            INSERT INTO Instructors (
-                                instructor_name,
-                                department_id,
-                                school_id,
-                                quality,
-                                total_ratings,
-                                retake_percent,
-                                difficulty
-                            ) VALUES (
-                                :instructor_name,
-                                :department_id,
-                                :school_id,
-                                :quality,
-                                :total_ratings,
-                                :retake_percent,
-                                :difficulty
-                            )
-                        """
-                        ),
-                        {
-                            "instructor_name": row["Name"],
-                            "department_id": department_id,
-                            "school_id": school_id,
-                            "quality": row["Quality"],
-                            "total_ratings": row["# of Ratings"],
-                            "retake_percent": row["Would Take Again (%)"],
-                            "difficulty": row["Difficulty"],
-                        },
-                    )
-                else:
-                    print(
-                        f"Warning: Skipping instructor {row['Name']} because "
-                        f"school '{row['School']}' does not exist."
-                    )
+            department_id = department_cache[department_name]
+
+            # Prep instructors to be added to the database
+            # Dictionaries allow for bulk insertions for efficiency
+            pending_instructors.append(
+                {
+                    "instructor_name": row["Name"],
+                    "department_id": department_id,
+                    "school_id": school_id,
+                    "quality": row["Quality"],
+                    "total_ratings": row["# of Ratings"],
+                    "retake_percent": row["Would Take Again (%)"],
+                    "difficulty": row["Difficulty"],
+                }
+            )
+
+        # Bulk insert using an insert statement
+        if pending_instructors:
+            insert_statement = text(
+                """
+                INSERT INTO Instructors (
+                    instructor_name, department_id, school_id,
+                    quality, total_ratings, retake_percent, difficulty
+                ) VALUES (
+                    :instructor_name, :department_id, :school_id,
+                    :quality, :total_ratings, :retake_percent, :difficulty
+                )
+            """
+            )
+            self.db_connection.execute(insert_statement, pending_instructors)

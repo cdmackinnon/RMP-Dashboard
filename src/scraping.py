@@ -52,20 +52,27 @@ class ProfessorScraper:
             except Exception:
                 break
 
-    def read_page_source(self, url, output_file):
+    def read_page_source(self, url, output_file=None):
         """
         Main function to scrape professor data from a school page.
+
+        Input: URL of the school page and an optional output file name.
+        Output: Returns the page source as a string.
         """
         self.driver.get(url)
         total_professors = self.get_total_professors()
         print(f"Total professors: {total_professors}")
         self.load_all_professors(total_professors)
 
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write(self.driver.page_source)
+        if output_file:
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(self.driver.page_source)
+                print(f"Page source saved to {output_file}")
 
-        print(f"Page source saved to {output_file}")
+        # store the page source and quit the driver
+        page_source = self.driver.page_source
         self.quit()
+        return page_source
 
     def fetch_school_name(self, id) -> str:
         """
