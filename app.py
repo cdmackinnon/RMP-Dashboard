@@ -50,6 +50,26 @@ def index():
     return render_template("index.html", schools=schools)
 
 
+@app.route("/scrape")
+def scrape_page():
+    with db.engine.connect() as connection:
+        result = connection.execute(
+            text(
+                """
+            SELECT school_name, school_id
+            FROM schools
+            WHERE school_id NOT IN (
+                SELECT DISTINCT school_id
+                FROM instructors
+            );
+            """
+            )
+        )
+        schools = [{"school_name": row[0], "school_id": row[1]} for row in result]
+
+    return render_template("scrape.html", schools=schools)
+
+
 @app.route("/scrape/<int:school_id>")
 def scrape(school_id):
     with db.engine.connect() as connection:

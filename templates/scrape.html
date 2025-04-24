@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head %}
+<h1>Scrape Page</h1>
+{% endblock %}
+
+{% block body %}
+<form method="GET" action="" onsubmit="event.preventDefault(); redirectToScrape();">
+  <label for="school-select">Select a school to scrape:</label>
+  <select id="school-select" name="school_id">
+    <option value="" disabled selected>Choose a school</option>
+    {% for school in schools|sort(attribute='school_name') %}
+      <option value="{{ school.school_id }}">{{ school.school_name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Scrape</button>
+</form>
+
+<script>
+  function redirectToScrape() {
+    const select = document.getElementById("school-select");
+    const schoolId = select.value;
+    if (schoolId) {
+      window.location.href = `/scrape/${schoolId}`;
+    }
+  }
+</script>
+{% endblock %}
