@@ -15,12 +15,9 @@ class Seeding:
     def __init__(self, db_connection: str):
         self.db_connection = db_connection
 
-    # Why not include every school then search bar can query unique instructors?
-    # Advantageous for rescraping, initial scraping
-    # Disadvantageous for all school queries (need unique school instructor 🤷)
-    def initialize_school_names(self):
+    def initialize_school_names(self) -> None:
         """
-        Initializes university names and ids.
+        Initializes university names and IDs in the database.
         Uses a JSON file containing this prescrapped information.
         """
         school_data = self.get_school_names()
@@ -40,17 +37,17 @@ class Seeding:
 
     def get_school_names(self) -> dict:
         """
-        Returns a dictionary of all rate my professor school id and their names
+        Returns a dictionary of all Rate My Professor school IDs and their names
         """
         # Open the JSON file of all RMP university names
-        # Contains names and ids between 1 and 8000 from rate my professor URLs
+        # Contains names and IDs between 1 and 8000 from rate my professor URLs
         # I.e. "https://www.ratemyprofessors.com/search/professors/{SCHOOL_ID_NUMBER}?q="
         school_names_path = Path(__file__).parent.parent / "data/school_names.json"
         with open(school_names_path, "r", encoding="UTF-8") as file:
             school_data = json.load(file)
         return school_data
 
-    def seed_existing_data(self):
+    def seed_existing_data(self) -> None:
         """
         Opens the "data/dataframes" folder and seeds all existing dataframes.
         Skips files without the .parquet "ending"
@@ -65,15 +62,16 @@ class Seeding:
             # TODO check runtime for these extra function calls
             self.seed_file(file)
 
-    def seed_file(self, file: Path):
+    def seed_file(self, file: Path) -> None:
+        """
+        Converts a file path to a Polars DataFrame and seeds it into the database.
+        """
         return self.seed_dataframe(pl.read_parquet(file))
 
     def seed_dataframe(self, df: pl.DataFrame) -> None:
         """
-        Seed a file into the database.
+        Seed a Polars Dataframe into the database.
         Fails if the university name is not recognized
-
-        Input: path to a parquet file
         """
 
         # Retrieving schools id's and their corresponding names
@@ -81,7 +79,7 @@ class Seeding:
         # Flipping the id name mapping
         school_id_mapping = {val: int(key) for key, val in school_names.items()}
 
-        # Storing the department ids to avoid duplicate inserts and faster retrieval
+        # Storing the department IDs to avoid duplicate inserts and faster retrieval
         department_cache = {}
         # Storing the instructors to be inserted for bulk insert
         pending_instructors = []
@@ -90,7 +88,7 @@ class Seeding:
             department_name = row["Department"]
             school_name = row["School"]
 
-            # Match school name to school_id (already inserted in DB)
+            # Check the new school name matches a name in the schools table
             school_id = school_id_mapping.get(school_name)
             if not school_id:
                 print(
@@ -98,8 +96,9 @@ class Seeding:
                 )
                 continue
 
-            # Check department cache or insert if new
+            # Adding or retrieving the department name and department ID
             if department_name not in department_cache:
+                # Equals 0 if the department already exists
                 department_id = self.db_connection.execute(
                     text(
                         """
@@ -112,6 +111,7 @@ class Seeding:
                     {"name": department_name},
                 ).scalar()
 
+                # If the department already exists, then retrieve its ID
                 if department_id is None:
                     department_id = self.db_connection.execute(
                         text(
@@ -124,11 +124,12 @@ class Seeding:
                         {"name": department_name},
                     ).scalar()
 
+                # Store the department ID in the cache for faster access later
                 department_cache[department_name] = department_id
 
             department_id = department_cache[department_name]
 
-            # Prep instructors to be added to the database
+            # Prep instructors to be added to the database with a dictionary
             # Dictionaries allow for bulk insertions for efficiency
             pending_instructors.append(
                 {
@@ -142,7 +143,7 @@ class Seeding:
                 }
             )
 
-        # Bulk insert using an insert statement
+        # Bulk insert using an insert statement and dictionary
         if pending_instructors:
             insert_statement = text(
                 """

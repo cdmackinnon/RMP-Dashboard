@@ -1,14 +1,20 @@
+import json
+from pathlib import Path
 from selenium import webdriver
-from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.chrome.webdriver import Options
-from tqdm import tqdm
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from tqdm import tqdm
 
 
 class ProfessorScraper:
     """
-    # TODO Type Hints and Docstrings
+    This class scrapes professor data from Rate My Professors using Selenium.
+    It loads the page, clicks the "Show More" button to load all professors,
+    extracts the total number of professors, and returns page source code.
+    It also provides a method to fetch school names based on their IDs.
     """
 
     def __init__(self, headless=True):
@@ -17,8 +23,10 @@ class ProfessorScraper:
             options.add_argument("--headless")
         self.driver = webdriver.Chrome(options=options)
 
-    def get_total_professors(self):
-        """Extracts the total number of professors from the page."""
+    def get_total_professors(self) -> int:
+        """
+        Extracts the total number of professors from the page.
+        """
         try:
             header = (
                 WebDriverWait(self.driver, 15)
@@ -38,8 +46,13 @@ class ProfessorScraper:
             print(f"Failed to extract total professors: {e}")
             return 0
 
-    def load_all_professors(self, total_professors):
-        """Clicks 'Show More' until all professors are loaded."""
+    def load_all_professors(self, total_professors: int) -> None:
+        """
+        Clicks the 'Show More' button on the webpage until all professors are loaded.
+        Each button click loads 8 professors.
+        The total number of clicks needed is calculated by dividing the total number of professors by 8.
+        """
+        # add 7 to the total professors to round up to the nearest multiple of 8
         total_clicks = (total_professors + 7) // 8
         for _ in tqdm(range(total_clicks), desc="Loading professors"):
             try:
@@ -52,7 +65,7 @@ class ProfessorScraper:
             except Exception:
                 break
 
-    def read_page_source(self, url, output_file=None):
+    def read_page_source(self, url: str, output_file: str = None) -> str:
         """
         Main function to scrape professor data from a school page.
 
@@ -60,6 +73,7 @@ class ProfessorScraper:
         Output: Returns the page source as a string.
         """
         self.driver.get(url)
+        # Wait for the page to load and print how many professors the college has
         total_professors = self.get_total_professors()
         print(f"Total professors: {total_professors}")
         self.load_all_professors(total_professors)
@@ -69,29 +83,27 @@ class ProfessorScraper:
                 f.write(self.driver.page_source)
                 print(f"Page source saved to {output_file}")
 
-        # store the page source and quit the driver
+        # Store the page source code and quit the driver
         page_source = self.driver.page_source
         self.quit()
         return page_source
 
-    def fetch_school_name(self, id) -> str:
+    def fetch_school_name(self, id: str) -> str:
         """
-        Fetches a school's name from a given page. Takes a page id as an input.
+        Fetches a school's name from a given webpage. Takes a page ID as an input.
         """
         url = f"https://www.ratemyprofessors.com/search/professors/{id}?q=*"
         try:
             self.driver.get(url)
-        except:
-            return None
-        try:
             header = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located(
                     (By.XPATH, "//h1[@data-testid='pagination-header-main-results']")
                 )
             )
-            # The 3rd word and onwards are the college's name
+            # The 3rd word onwards are the college's name
             return " ".join(header.text.split()[3:])
-        except:
+        # If the page doesn't load or contain the header then return None
+        except (TimeoutException, WebDriverException):
             return None
 
     def fetch_all_school_names(self) -> None:
