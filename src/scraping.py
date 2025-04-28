@@ -94,6 +94,32 @@ class ProfessorScraper:
         except:
             return None
 
+    def fetch_all_school_names(self) -> None:
+        """
+        Fetches all school names and their IDs from Rate My Professors.
+        Stores the data in a JSON file.
+
+        Note:
+        - Most school IDs are densely packed between 1 and 6000.
+        - Beyond 6000, IDs become increasingly sparse, with the majority unused.
+        - This function is not integrated in the app. The IDs are statically stored in a JSON file.
+        """
+        # Checking the first 8000 IDs for reasonable coverage
+        NUM_UNIVERSITIES = 8000
+        school_data = {}
+
+        for id in range(1, NUM_UNIVERSITIES + 1):
+            name = self.fetch_school_name(id)
+            # Store only if a valid name is found
+            # IDs not corresponding to a university will return None or "other schools"
+            if name and name != "other schools":
+                school_data[id] = name
+
+        # Save dictionary to JSON file
+        json_path = Path(__file__).parent.parent / "data/school_names.json"
+        with open(json_path, "w") as f:
+            json.dump(school_data, f, indent=4)
+
     def quit(self):
         """Closes the WebDriver."""
         self.driver.quit()
