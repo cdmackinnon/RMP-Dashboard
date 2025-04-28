@@ -10,7 +10,6 @@ CREATE TABLE Schools (
     school_name VARCHAR(255)
 );
 
-
 CREATE TABLE Instructors (
     instructor_id SERIAL PRIMARY KEY,
     instructor_name VARCHAR(255),

@@ -4,12 +4,13 @@ import polars as pl
 from pathlib import Path
 
 
-def parse_professors(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
+def parse_professors_from_path(path: Path) -> pl.DataFrame:
+    html_content = path.read_text(encoding="utf-8")
+    return parse_professors(html_content)
 
+
+def parse_professors(html_content: str) -> pl.DataFrame:
     soup = BeautifulSoup(html_content, "html.parser")
-
     # Initialize the column-wise lists for a faster polars dataframe
     names, departments, schools = [], [], []
     qualities, num_ratings, would_take_agains, difficulties = [], [], [], []
@@ -77,5 +78,5 @@ def parse_all(file_path):
         if file == ".DS_Store":
             continue
 
-        df = parse_professors(Path(file_path) / file)
+        df = parse_professors_from_path(Path(file_path) / file)
         save_to_parquet(df, Path("data", "dataframes", file + ".parquet"))
