@@ -85,28 +85,10 @@ def scrape(school_id):
     return f"Scraped {school_name} with ID {school_id}."
 
 
-# TODO implement a way to rescrape all the schools names
-# This visits 8000 URLs to retrieve the (name, id) combos
-# def get_university_names():
-#     NUM_UNIVERSITIES = 8000
-#     school_data = {}
-#     test = ProfessorScraper()
-
-#     for id in range(1, NUM_UNIVERSITIES):
-#         name = test.fetch_school_name(id)
-#         # Store only if a valid name is found
-#         if name and name != "other schools":
-#             school_data[id] = name
-
-#     # Save dictionary to JSON file
-#     with open("data/school_names.json", "w") as f:
-#         json.dump(school_data, f, indent=4)
-
 if __name__ == "__main__":
     initialize_database(app)
     with app.app_context():
         seeding = Seeding(db.engine.connect())
         seeding.initialize_school_names()
         seeding.seed_existing_data()
-        pass
     app.run(debug=False, port=8080)
