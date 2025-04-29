@@ -51,6 +51,9 @@ def school():
 def school_plot():
     # Retrieve the school name from the URL with default ""
     school_name = request.args.get("school_name", "")
+    minReviews = request.args.get("min_reviews", 1000)
+    metric = request.args.get("metric", "difficulty")
+
     if not school_name:
         return jsonify({"error": "Missing school_name parameter"}), 400
 
@@ -58,20 +61,23 @@ def school_plot():
     with db.engine.connect() as connection:
         result = connection.execute(
             text(
-                """
+                f"""
                 SELECT d.department_name, 
-                        ROUND(SUM(i.difficulty * i.total_ratings) / SUM(i.total_ratings), 2) AS avg_difficulty,
+                        ROUND(SUM(i.{metric} * i.total_ratings) / SUM(i.total_ratings), 2) AS avg_metric,
                         SUM(i.total_ratings) as total_ratings
                 FROM Instructors i
                 JOIN Departments d ON i.department_id = d.department_id
                 JOIN Schools s ON i.school_id = s.school_id
                 WHERE s.school_name = :school_name
                 GROUP BY d.department_name
-                HAVING SUM(i.total_ratings) > 10
-                ORDER BY avg_difficulty DESC
+                HAVING SUM(i.total_ratings) >= :minReviews
+                ORDER BY avg_metric DESC
                 """
             ),
-            {"school_name": school_name},
+            {
+                "school_name": school_name,
+                "minReviews": minReviews,
+            },
         )
         data = result.fetchall()
 
@@ -79,12 +85,12 @@ def school_plot():
         return jsonify({"error": "No data found"}), 404
 
     departments = [row[0] for row in data]
-    avg_difficulties = [row[1] for row in data]
+    avg_stat = [row[1] for row in data]
     total_ratings = [row[2] for row in data]
 
     bar = go.Bar(
         x=departments,
-        y=avg_difficulties,
+        y=avg_stat,
         text=[f"{tr} ratings" for tr in total_ratings],
         marker_color="#FF9149",
     )
