@@ -49,37 +49,30 @@ def school():
 
 @app.route("/school_plot")
 def school_plot():
+    # Retrieve the school name from the URL with default ""
     school_name = request.args.get("school_name", "")
     if not school_name:
         return jsonify({"error": "Missing school_name parameter"}), 400
 
+    # Query for the school's departments with their resepective difficulties and total ratings
     with db.engine.connect() as connection:
         result = connection.execute(
             text(
                 """
-                SELECT
-                    d.department_name,
-                    ROUND(SUM(i.difficulty * i.total_ratings) / SUM(i.total_ratings), 2) AS avg_difficulty,
-                    SUM(i.total_ratings) as total_ratings
-                FROM
-                    Instructors i
-                JOIN
-                    Departments d ON i.department_id = d.department_id
-                JOIN
-                    Schools s ON i.school_id = s.school_id
-                WHERE
-                    s.school_name = :school_name
-                GROUP BY
-                    d.department_name
-                HAVING
-                    SUM(i.total_ratings) > 10
-                ORDER BY
-                    avg_difficulty DESC
+                SELECT d.department_name, 
+                        ROUND(SUM(i.difficulty * i.total_ratings) / SUM(i.total_ratings), 2) AS avg_difficulty,
+                        SUM(i.total_ratings) as total_ratings
+                FROM Instructors i
+                JOIN Departments d ON i.department_id = d.department_id
+                JOIN Schools s ON i.school_id = s.school_id
+                WHERE s.school_name = :school_name
+                GROUP BY d.department_name
+                HAVING SUM(i.total_ratings) > 10
+                ORDER BY avg_difficulty DESC
                 """
             ),
             {"school_name": school_name},
         )
-
         data = result.fetchall()
 
     if not data:
@@ -99,7 +92,9 @@ def school_plot():
     layout = go.Layout(
         title=f"Department Difficulties at {school_name}",
         xaxis=dict(title="Department", tickangle=45),
-        yaxis=dict(title="Average Professor Difficulty"),
+        yaxis=dict(
+            title="Average Professor Difficulty", range=[1, 5], tickvals=[1, 2, 3, 4, 5]
+        ),
         height=600,
         margin=dict(b=150),
         paper_bgcolor="#FFEDDB",
