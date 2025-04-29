@@ -93,13 +93,14 @@
           if (data.graphJSON) {
             // Parse the JSON back into the plot
             const plotData = JSON.parse(data.graphJSON);
-            // Create build plot and place in the div with id "plot"
             Plotly.newPlot("plot", plotData.data, plotData.layout, {responsive: true});
-          } else {
-            // consider linking to the parsing page
-            $("#plot").html("<p class='text-center text-gray-500 mt-4'>No data available for this school.</p>");
           }
-        });
+        // If there is no plot then return text (i.e. filtering for too many reviews)
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+        // Hide loading wheel if request fails
+        $("#loader").addClass("hidden");
+        $("#plot").html("<p class='text-center text-gray-500 mt-4'>No data available for this request.</p>");
+        });;
       }
     });
   });
