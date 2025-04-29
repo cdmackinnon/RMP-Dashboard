@@ -95,12 +95,24 @@ def school_plot():
         marker_color="#FF9149",
     )
 
+    # Change the title and axis based on user selection
+    if metric == "difficulty":
+        title = "Average Professor Difficulty"
+        ticks = [1, 2, 3, 4, 5]
+        span = [1, 5]
+    elif metric == "quality":
+        title = "Average Professor Quality"
+        ticks = [1, 2, 3, 4, 5]
+        span = [1, 5]
+    else:
+        title = "Average Professor Retake Percent"
+        ticks = [0, 25, 50, 75, 100]
+        span = [0, 100]
+
     layout = go.Layout(
-        title=f"Department Difficulties at {school_name}",
+        title=f"Department Wide Averages at {school_name}",
         xaxis=dict(title="Department", tickangle=45),
-        yaxis=dict(
-            title="Average Professor Difficulty", range=[1, 5], tickvals=[1, 2, 3, 4, 5]
-        ),
+        yaxis=dict(title=title, range=span, tickvals=ticks),
         height=600,
         margin=dict(b=150),
         paper_bgcolor="#FFEDDB",
