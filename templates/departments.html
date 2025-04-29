@@ -15,16 +15,36 @@
   <div class="bg-[#FFECDB] p-10 rounded-3xl shadow-2xl w-full max-w-4xl" data-aos="zoom-in">
 
     <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">
-      📚 Department Difficulties by School
+      📚 Department Statistics by School
     </h2>
 
-    <div class="flex justify-center mb-8">
-      <input
-        id="school-search"
-        placeholder="Type a university name..."
-        class="border border-gray-300 rounded-full px-6 py-3 w-full max-w-lg text-lg focus:ring-4 focus:ring-[#FF9149] focus:outline-none transition-all bg-[#E5ECF6]"
-      />
-    </div>
+    <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
+        <input
+          id="school-search"
+          placeholder="Type a university name..."
+          class="border border-gray-300 rounded-full px-6 text-lg h-[52px] w-full max-w-lg bg-[#E5ECF6] transition"
+        />
+      
+        <select
+          id="metric-select"
+          class="rounded-full px-6 text-lg h-[52px] border border-gray-300 bg-[#E5ECF6] focus:ring-[#FF9149] transition"
+        >
+          <option value="difficulty">Average Difficulty</option>
+          <option value="quality">Average Quality</option>
+          <option value="retake_percent">Would Take Again (%)</option>
+        </select>
+      
+        <select
+          id="min-reviews"
+          class="rounded-full px-6 text-lg h-[52px] border border-gray-300 bg-[#E5ECF6] focus:ring-[#FF9149] transition"
+        >
+          <option value="1">At Least 1 Review</option>
+          <option value="10">At Least 10 Reviews</option>
+          <option value="50" selected>At Least 50 Reviews</option>
+          <option value="100" selected>At Least 100 Reviews</option>
+        </select>
+      </div>
+      
 
     <style>
         .ui-autocomplete {
