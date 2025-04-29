@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.js -->
+  <script src="https://cdn.tailwindcss.com"></script> <!-- TailwindCSS -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"> <!-- AOS Animation CSS -->
+  
+{% endblock %}
+
+{% block body %}
+
+<div class="min-h-screen bg-gradient-to-br from-[#60B5FF] to-[#AFDDFF] flex items-center justify-center p-8">
+
+  <!-- Drop shadow and make the box animated on page load   -->
+  <div class="bg-[#FFECDB] p-10 rounded-3xl shadow-2xl w-full max-w-4xl" data-aos="zoom-in">
+
+    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">
+      📚 Department Statistics by School
+    </h2>
+
+    <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
+        <input
+          id="school-search"
+          placeholder="Type a university name..."
+          class="border border-gray-300 rounded-full px-6 text-lg h-[52px] w-full max-w-lg bg-[#E5ECF6] transition"
+        />
+      
+        <select
+          id="metric-select"
+          class="rounded-full px-6 text-lg h-[52px] border border-gray-300 bg-[#E5ECF6] focus:ring-[#FF9149] transition"
+        >
+          <option value="difficulty">Average Difficulty</option>
+          <option value="quality">Average Quality</option>
+          <option value="retake_percent">Would Take Again (%)</option>
+        </select>
+      
+        <select
+          id="min-reviews"
+          class="rounded-full px-6 text-lg h-[52px] border border-gray-300 bg-[#E5ECF6] focus:ring-[#FF9149] transition"
+        >
+          <option value="1">At Least 1 Review</option>
+          <option value="10">At Least 10 Reviews</option>
+          <option value="50" selected>At Least 50 Reviews</option>
+          <option value="100" selected>At Least 100 Reviews</option>
+        </select>
+      </div>
+      
+
+    <style>
+        .ui-autocomplete {
+            /* Makes the autocomplete dropdown more rounded */
+            border-radius: 1rem;
+            /* Adds a subtle shadow */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #E5ECF6; 
+        }
+        /* Space out this autocompleted schools */
+        .ui-menu-item {
+            padding: 0.25rem;
+            /* Smooth hover effect with a delay on color change */
+            transition: background-color 0.2s ease;
+            border-radius: 1rem;
+            outline: none;
+        }
+        /* Sets hover color */
+        .ui-menu-item:hover {
+            border-radius: 1rem;
+            background-color: #FF9149; 
+            color: white;
+        }
+        /* Removes the default blue hover box */
+        .ui-menu-item-wrapper.ui-state-active {
+            border-radius: 1rem;
+            background-color: #FF9149 !important;
+            color: white !important;
+            outline: none !important;
+            border: none !important;
+        }
+    </style>
+
+    <div id="plot" class="w-full" data-aos="fade-up" data-aos-delay="200"></div>
+
+    <!-- Loading Wheel -->
+    <div id="loader" class="flex justify-center mt-6 hidden">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  // initialize animate on scroll 
+  AOS.init();
+</script>
+
+<script>
+    $(function () {
+      function fetchAndRenderPlot() {
+        const schoolName = $("#school-search").val();
+        const metric = $("#metric-select").val();
+        const minReviews = $("#min-reviews").val();
+  
+        // Do nothing if a school hasn't been selected yet
+        if (!schoolName) return;
+  
+        console.log("Fetching plot for:", schoolName, metric, minReviews);
+  
+        // Show loading wheel while fetching data
+        $("#loader").removeClass("hidden");
+        $("#plot").html("");
+        // Reference the plot url from app.py
+        $.getJSON("/school_plot", {
+          school_name: schoolName,
+          metric: metric,
+          min_reviews: minReviews
+        }, function (data) {
+            // Hide loading wheel when done
+          $("#loader").addClass("hidden");
+          if (data.graphJSON) {
+            // Parse the JSON back into the plot
+            const plotData = JSON.parse(data.graphJSON);
+            Plotly.newPlot("plot", plotData.data, plotData.layout, {responsive: true});
+          }
+        // If there is no plot then return text (i.e. filtering for too many reviews)
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+        // Hide loading wheel if request fails
+        $("#loader").addClass("hidden");
+        $("#plot").html("<p class='text-center text-gray-500 mt-4'>No data available for this request.</p>");
+        });;
+      }
+  
+
+      // Attach the autocomplete feature to the input text box "school-search"
+      $("#school-search").autocomplete({
+        // Reference the autocomplete url from app.py
+        source: "/autocomplete",
+        // Pass in the minimum number of characters to trigger autocomplete
+        minLength: 2,
+        // After a school is selected attempt to fetch the plot
+        select: function (event, ui) {
+          $("#school-search").val(ui.item.value);
+          fetchAndRenderPlot();
+        }
+      });
+  
+      // Also trigger when metric or min-reviews is changed
+      $("#metric-select, #min-reviews").on("change", fetchAndRenderPlot);
+    });
+  </script>
+  
+
+{% endblock %}
