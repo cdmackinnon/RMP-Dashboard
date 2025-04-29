@@ -26,6 +26,33 @@
       />
     </div>
 
+    <style>
+        .ui-autocomplete {
+            border-radius: 1rem; /* Makes the autocomplete dropdown more rounded */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+            background-color: #E5ECF6; /* Sets the background color */
+        }
+        .ui-menu-item {
+            padding: 0.25rem; /* Adds padding to items */
+            transition: background-color 0.2s ease; /* Smooth hover effect */
+            border-radius: 1rem;
+            outline: none;
+        }
+        .ui-menu-item:hover {
+            border-radius: 1rem;
+            background-color: #FF9149; /* Sets hover color to FF9149 */
+            color: white; /* Ensures text is readable on hover */
+        }
+        /* Removes the default blue hover box */
+        .ui-menu-item-wrapper.ui-state-active {
+            border-radius: 1rem;
+            background-color: #FF9149 !important;
+            color: white !important;
+            outline: none !important;
+            border: none !important;
+        }
+    </style>
+
     <div id="plot" class="w-full" data-aos="fade-up" data-aos-delay="200"></div>
 
     <!-- Loading Wheel -->
