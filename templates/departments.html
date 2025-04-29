@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.js -->
+  <script src="https://cdn.tailwindcss.com"></script> <!-- TailwindCSS -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"> <!-- AOS Animation CSS -->
+  
+{% endblock %}
+
+{% block body %}
+
+<div class="min-h-screen bg-gradient-to-br from-[#60B5FF] to-[#AFDDFF] flex items-center justify-center p-8">
+
+  <!-- Drop shadow and make the box animated on page load   -->
+  <div class="bg-[#FFECDB] p-10 rounded-3xl shadow-2xl w-full max-w-4xl" data-aos="zoom-in">
+
+    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">
+      📚 Department Difficulties by School
+    </h2>
+
+    <div class="flex justify-center mb-8">
+      <input
+        id="school-search"
+        placeholder="Type a university name..."
+        class="border border-gray-300 rounded-full px-6 py-3 w-full max-w-lg text-lg focus:ring-4 focus:ring-[#FF9149] focus:outline-none transition-all bg-[#E5ECF6]"
+      />
+    </div>
+
+    <div id="plot" class="w-full" data-aos="fade-up" data-aos-delay="200"></div>
+
+    <!-- Loading Wheel -->
+    <div id="loader" class="flex justify-center mt-6 hidden">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  // initialize animate on scroll 
+  AOS.init();
+</script>
+
+<script>
+  $(function () {
+    // Attach the autocomplete feature to the input text box "school-search"
+    $("#school-search").autocomplete({
+      // Reference the autocomplete url from app.py
+      source: "/autocomplete",
+      // Pass in the minimum number of characters to trigger autocomplete
+      minLength: 2,
+      select: function (event, ui) {
+        const schoolName = ui.item.value;
+        console.log("User selected:", schoolName);
+
+        // After a school is selected reveal a loading wheel
+        $("#loader").removeClass("hidden");
+        // Clear previous plot
+        $("#plot").html("");
+        // Make request with the user selected school name
+        $.getJSON("/school_plot", { school_name: schoolName }, function (data) {
+          // Hide loading wheel when done
+          $("#loader").addClass("hidden"); 
+          if (data.graphJSON) {
+            // Parse the JSON back into the plot
+            const plotData = JSON.parse(data.graphJSON);
+            // Create build plot and place in the div with id "plot"
+            Plotly.newPlot("plot", plotData.data, plotData.layout, {responsive: true});
+          } else {
+            // consider linking to the parsing page
+            $("#plot").html("<p class='text-center text-gray-500 mt-4'>No data available for this school.</p>");
+          }
+        });
+      }
+    });
+  });
+</script>
+
+{% endblock %}
