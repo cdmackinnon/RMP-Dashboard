@@ -1,3 +1,4 @@
+import json
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
@@ -7,6 +8,9 @@ import plotly.io as pio
 import plotly.utils
 import json
 from flask import request, jsonify
+from src.scraping import ProfessorScraper
+from pathlib import Path
+from src.parse_professors import parse_professors, save_to_parquet
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///rmp.db"
@@ -23,6 +27,7 @@ def initialize_database(app):
             db.session.commit()
 
 
+
 @app.route("/autocomplete")
 def autocomplete():
     term = request.args.get("term", "")
@@ -35,6 +40,26 @@ def autocomplete():
         )
         names = [row[0] for row in result]
     return jsonify(names)
+
+def user_scrape_request(id: int, name: str) -> None:
+    """
+    Scrapes a single university and adds the parquet to the data directory.
+
+    *Note: Lacks optimization for multiple threads or object persistence for consecutive requests.
+    (i.e. start-up time for the webdriver on each request)*
+
+    Input: id from the SCHOOL table in the database, Name for the parquet
+    """
+    url = f"https://www.ratemyprofessors.com/search/professors/{id}?q="
+
+    scraper = ProfessorScraper()
+    html_string = scraper.read_page_source(url, output_file=None)
+    df = parse_professors(html_string)
+    seeder = Seeding(db.engine.connect())
+    seeder.seed_dataframe(df)
+    data_path = Path(__file__).parent / "data/dataframes" / f"{name}.parquet"
+    save_to_parquet(df, data_path)
+
 
 
 @app.route("/")
@@ -122,6 +147,41 @@ def school_plot():
     graph_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
     return jsonify({"graphJSON": graph_json})
+
+
+@app.route("/scrape")
+def scrape_page():
+    with db.engine.connect() as connection:
+        result = connection.execute(
+            text(
+                """
+            SELECT school_name, school_id
+            FROM schools
+            WHERE school_id NOT IN (
+                SELECT DISTINCT school_id
+                FROM instructors
+            );
+            """
+            )
+        )
+        schools = [{"school_name": row[0], "school_id": row[1]} for row in result]
+
+    return render_template("scrape.html", schools=schools)
+
+
+@app.route("/scrape/<int:school_id>")
+def scrape(school_id):
+    with db.engine.connect() as connection:
+        result = connection.execute(
+            text("SELECT school_name FROM schools WHERE school_id = :school_id"),
+            {"school_id": school_id},
+        )
+        school_name = result.fetchone()[0]
+
+    # Call the scraping function
+    user_scrape_request(school_id, school_name)
+
+    return f"Scraped {school_name} with ID {school_id}."
 
 
 if __name__ == "__main__":
