@@ -236,9 +236,17 @@ def box_plot():
         return jsonify({"error": "No data found"}), 404
 
     metric = metric.replace("_", " ").title()
+
+    if metric != "retake_percent":
+        ticks = [1, 2, 3, 4, 5]
+        span = [1, 5]
+    else:
+        ticks = [0, 25, 50, 75, 100]
+        span = [0, 100]
+
     layout = go.Layout(
         title=f"{metric} Distribution in {department} Across Schools",
-        xaxis=dict(title=metric),
+        xaxis=dict(title=metric, range=span, tickvals=ticks),
         paper_bgcolor="#FFEDDB",
         height=600,
     )
