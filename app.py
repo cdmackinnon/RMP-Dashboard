@@ -27,14 +27,20 @@ def initialize_database(app):
             db.session.commit()
 
 
-
 @app.route("/autocomplete")
 def autocomplete():
     term = request.args.get("term", "")
     with db.engine.connect() as conn:
         result = conn.execute(
             text(
-                "SELECT DISTINCT school_name FROM Schools WHERE school_name ILIKE :term LIMIT 10"
+                """
+                SELECT DISTINCT school_name 
+                FROM Schools 
+                RIGHT JOIN Instructors
+                ON Schools.school_id = Instructors.school_id
+                WHERE school_name 
+                ILIKE :term LIMIT 10
+                """
             ),
             {"term": f"%{term}%"},
         )
