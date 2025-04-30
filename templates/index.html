@@ -1,21 +1,18 @@
 {% extends "base.html" %}
 
 {% block head%}
-<h1>Header Stuff</h1>
+<script src="https://cdn.tailwindcss.com"></script> <!-- TailwindCSS -->
 
 {% endblock %}
 
-{% block body%}
-<h1>Body Stuff</h1>
-
-<form method="GET" action="/search">
-  <label for="school-select">Select a school:</label>
-  <select id="school-select" name="school_id" onchange="this.form.submit()">
-    <option value="" disabled selected>Choose a school</option>
-    {% for school in schools|sort(attribute='school_name') %}
-    <option value="{{ school.school_id }}">{{ school.school_name }}</option>
-    {% endfor %}
-  </select>
-</form>
-
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-[#60B5FF] to-[#AFDDFF]">
+  <h1 class="text-4xl font-bold">Rate My Professor Dashboard</h1>
+  <br>
+  <ul>
+    <li><a href="/departments">View School Department Statistics</a></li>
+    <li><a href="/comparison">Compare School's Departments</a></li>
+    <li><a href="/scrape">Scrape Data</a></li>
+  </ul>
+</div>
 {% endblock %}

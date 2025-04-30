@@ -70,7 +70,7 @@ def user_scrape_request(id: int, name: str) -> None:
 
 @app.route("/")
 def index():
-    return "Index"
+    return render_template("index.html")
 
 
 @app.route("/departments")
