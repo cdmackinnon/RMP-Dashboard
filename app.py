@@ -47,6 +47,7 @@ def autocomplete():
         names = [row[0] for row in result]
     return jsonify(names)
 
+
 def user_scrape_request(id: int, name: str) -> None:
     """
     Scrapes a single university and adds the parquet to the data directory.
@@ -65,7 +66,6 @@ def user_scrape_request(id: int, name: str) -> None:
     seeder.seed_dataframe(df)
     data_path = Path(__file__).parent / "data/dataframes" / f"{name}.parquet"
     save_to_parquet(df, data_path)
-
 
 
 @app.route("/")
@@ -188,6 +188,89 @@ def scrape(school_id):
     user_scrape_request(school_id, school_name)
 
     return f"Scraped {school_name} with ID {school_id}."
+
+
+@app.route("/comparison")
+def comparison():
+    return render_template("comparison.html")
+
+
+@app.route("/box_plot")
+def box_plot():
+    school_names = request.args.getlist("schools[]")
+    department = request.args.get("department")
+    metric = request.args.get("metric")
+
+    if not school_names or not department or not metric:
+        return jsonify({"error": "Missing parameters"}), 400
+
+    box_data = []
+    with db.engine.connect() as conn:
+        for school in school_names:
+            result = conn.execute(
+                text(
+                    f"""
+                    SELECT i.{metric}
+                    FROM Instructors i
+                    JOIN Departments d ON i.department_id = d.department_id
+                    JOIN Schools s ON i.school_id = s.school_id
+                    WHERE s.school_name = :school AND d.department_name = :dept AND i.{metric} IS NOT NULL
+                """
+                ),
+                {"school": school, "dept": department},
+            )
+            values = [row[0] for row in result]
+            if values:
+                box_data.append(
+                    go.Box(
+                        x=values,
+                        name=school,
+                        boxpoints="outliers",
+                        marker_color="#FF9149",
+                        orientation="h",
+                        hoverinfo="x",
+                    )
+                )
+
+    if not box_data:
+        return jsonify({"error": "No data found"}), 404
+
+    metric = metric.replace("_", " ").title()
+    layout = go.Layout(
+        title=f"{metric} Distribution in {department} Across Schools",
+        xaxis=dict(title=metric),
+        paper_bgcolor="#FFEDDB",
+        height=600,
+    )
+
+    fig = go.Figure(data=box_data, layout=layout)
+    return jsonify({"graphJSON": json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)})
+
+
+@app.route("/departments_for_schools")
+def departments_for_schools():
+    schools = request.args.getlist("schools[]")
+    if not schools:
+        return jsonify([])
+
+    with db.engine.connect() as conn:
+        result = conn.execute(
+            # Finding the departments shared across all schools
+            text(
+                """
+                SELECT department_name
+                FROM Departments
+                JOIN Instructors ON Instructors.department_id = Departments.department_id
+                JOIN Schools ON Schools.school_id = Instructors.school_id
+                WHERE Schools.school_name = ANY(:schools)
+                GROUP BY department_name
+                HAVING COUNT(DISTINCT Schools.school_name) = :num_schools
+                """
+            ),
+            {"schools": schools, "num_schools": len(schools)},
+        )
+        departments = sorted({row[0] for row in result})
+    return jsonify(departments)
 
 
 if __name__ == "__main__":
