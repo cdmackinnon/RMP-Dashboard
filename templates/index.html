@@ -6,13 +6,25 @@
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-gradient-to-br from-[#60B5FF] to-[#AFDDFF]">
-  <h1 class="text-4xl font-bold">Rate My Professor Dashboard</h1>
-  <br>
-  <ul>
-    <li><a href="/departments">View School Department Statistics</a></li>
-    <li><a href="/comparison">Compare School's Departments</a></li>
-    <li><a href="/scrape">Scrape Data</a></li>
-  </ul>
+
+<div class="min-h-screen bg-gradient-to-br from-[#60B5FF] to-[#AFDDFF] flex items-center justify-center p-8">
+  <!-- Drop shadow and make the box animated on page load   -->
+  <div class="bg-[#FFECDB] p-10 rounded-3xl shadow-2xl w-full" data-aos="zoom-in">
+    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">📈 Rate My Professor Dashboard</h2>
+    <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
+      <a href="/departments"
+        class="rounded-full px-6 text-lg h-[52px] flex items-center justify-center bg-[#E5ECF6] border border-gray-300 text-black w-full max-w-lg transition hover:bg-[#d4deea] focus:ring-1 focus:ring-[#FF9149]">
+        Individual University Departments
+      </a>
+      <a href="/comparison"
+        class="rounded-full px-6 text-lg h-[52px] flex items-center justify-center bg-[#E5ECF6] border border-gray-300 text-black w-full max-w-lg transition hover:bg-[#d4deea] focus:ring-1 focus:ring-[#FF9149]">
+        Compare University Departments
+      </a>
+      <a href="/scrape"
+        class="rounded-full px-6 text-lg h-[52px] flex items-center justify-center bg-[#E5ECF6] border border-gray-300 text-black w-full max-w-lg transition hover:bg-[#d4deea] focus:ring-1 focus:ring-[#FF9149]">
+        Download Additional Universities
+      </a>
+    </div>
+  </div>
 </div>
 {% endblock %}
