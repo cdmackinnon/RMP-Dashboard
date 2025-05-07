@@ -38,7 +38,7 @@ class ProfessorScraper:
                         )
                     )
                 )
-                .text
+                .get_attribute("textContent")
             )
             return int(header.split()[0])
         except Exception as e:
