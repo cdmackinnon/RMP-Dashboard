@@ -17,7 +17,12 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///rmp.db"
 db = SQLAlchemy(app)
 
 
-def initialize_database(app):
+def initialize_database(app: Flask) -> bool:
+    """
+    Checks if the schools table exists
+    If not it creates the tables and returns True
+    Otherwise returns False indicating the database is already initialized
+    """
     with app.app_context():
         if not db.engine.dialect.has_table(
             db.engine.connect(), "schools"
@@ -25,6 +30,9 @@ def initialize_database(app):
             with open("db/schema.sql", "r") as f:
                 db.session.execute(text(f.read()))
             db.session.commit()
+            return True
+        else:
+            return False
 
 
 @app.route("/autocomplete")
@@ -282,9 +290,10 @@ def departments_for_schools():
 
 
 if __name__ == "__main__":
-    initialize_database(app)
-    # with app.app_context():
-    #     seeding = Seeding(db.engine.connect())
-    #     seeding.initialize_school_names()
-    #     seeding.seed_existing_data()
+    # Check if the database needs to be initialized or not
+    if initialize_database(app):
+        with app.app_context():
+            seeding = Seeding(db.engine.connect())
+            seeding.initialize_school_names()
+            seeding.seed_existing_data()
     app.run(debug=True, port=8080)
