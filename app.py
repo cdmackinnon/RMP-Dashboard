@@ -165,37 +165,60 @@ def school_plot():
 
 @app.route("/scrape")
 def scrape_page():
+    return render_template("scrape.html")
+
+
+@app.route("/autocomplete-unscraped")
+def autocomplete_unscraped():
+    term = request.args.get("term", "")
     with db.engine.connect() as connection:
         result = connection.execute(
             text(
                 """
-                SELECT school_name, school_id
+                SELECT school_name
                 FROM schools
                 WHERE school_id NOT IN (
                     SELECT DISTINCT school_id
                     FROM instructors
-                );
+                )
+                AND school_name ILIKE :term
+                LIMIT 10
                 """
-            )
+            ),
+            {"term": f"%{term}%"},
         )
-        schools = [{"school_name": row[0], "school_id": row[1]} for row in result]
+        schools = [row[0] for row in result]
+    return jsonify(schools)
 
-    return render_template("scrape.html", schools=schools)
 
+@app.route("/scrape_school", methods=["POST"])
+def scrape():
+    school_name = request.form.get("school_name")
 
-@app.route("/scrape/<int:school_id>")
-def scrape(school_id):
+    if not school_name:
+        return jsonify({"error": "Missing school_id parameter"}), 400
+
     with db.engine.connect() as connection:
         result = connection.execute(
-            text("SELECT school_name FROM schools WHERE school_id = :school_id"),
-            {"school_id": school_id},
+            text(
+                """
+                    SELECT school_id 
+                    FROM schools 
+                    WHERE school_name 
+                    ILIKE :school_name LIMIT 1
+                 """
+            ),
+            {"school_name": school_name},
         )
-        school_name = result.fetchone()[0]
+        row = result.fetchone()
+        if not row:
+            return jsonify({"error": f"School with name {school_name} not found"}), 404
+        school_id = row[0]
 
     # Call the scraping function
     user_scrape_request(school_id, school_name)
 
-    return f"Scraped {school_name} with ID {school_id}."
+    return jsonify({"message": f"Scraped {school_name} with ID {school_id}."})
 
 
 @app.route("/comparison")
