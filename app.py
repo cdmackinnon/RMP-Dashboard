@@ -161,13 +161,13 @@ def scrape_page():
         result = connection.execute(
             text(
                 """
-            SELECT school_name, school_id
-            FROM schools
-            WHERE school_id NOT IN (
-                SELECT DISTINCT school_id
-                FROM instructors
-            );
-            """
+                SELECT school_name, school_id
+                FROM schools
+                WHERE school_id NOT IN (
+                    SELECT DISTINCT school_id
+                    FROM instructors
+                );
+                """
             )
         )
         schools = [{"school_name": row[0], "school_id": row[1]} for row in result]
