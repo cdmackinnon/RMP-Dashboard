@@ -13,7 +13,12 @@
   <!-- Drop shadow and make the box animated on page load   -->
   <div class="bg-[#FFECDB] p-10 rounded-3xl shadow-2xl w-full" data-aos="zoom-in">
 
-    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">📊 Compare Departments Across Schools</h2>
+    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">
+      📊 Compare Departments Across Schools
+    </h2>
+    <h3 class="text-2xl text-center text-gray-800 mb-8">
+      Enter several school names and select a department to compare their statistics
+    </h3>
     <!-- 3 options -->
     <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
       <input id="school-select" placeholder="University names"
@@ -104,6 +109,8 @@
             const $deptSelect = $("#department-select");
             // Clear existing options
             $deptSelect.empty();
+            // Clear the search bar
+            $("#school-select").val("");
 
             departments.forEach(dept => {
               $deptSelect.append(new Option(dept, dept));
