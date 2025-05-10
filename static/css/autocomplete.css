@@ -1,0 +1,32 @@
+.ui-autocomplete {
+/* Makes the autocomplete dropdown more rounded */
+border-radius: 1rem;
+/* Adds a subtle shadow */
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+background-color: #E5ECF6;
+}
+
+/* Space out this autocompleted schools */
+.ui-menu-item {
+padding: 0.25rem;
+/* Smooth hover effect with a delay on color change */
+transition: background-color 0.2s ease;
+border-radius: 1rem;
+outline: none;
+}
+
+/* Sets hover color */
+.ui-menu-item:hover {
+border-radius: 1rem;
+background-color: #FF9149;
+color: white;
+}
+
+/* Removes the default blue hover box */
+.ui-menu-item-wrapper.ui-state-active {
+border-radius: 1rem;
+background-color: #FF9149 !important;
+color: white !important;
+outline: none !important;
+border: none !important;
+}
