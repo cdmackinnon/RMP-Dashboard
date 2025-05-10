@@ -16,5 +16,6 @@ dependencies = [
     "psycopg2>=2.9.10",
     "pylint>=3.3.6",
     "selenium>=4.30.0",
+    "sqlalchemy-utils>=0.41.2",
     "tqdm>=4.67.1",
 ]
