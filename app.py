@@ -25,7 +25,6 @@ def initialize_database(app: Flask) -> bool:
     If not it creates the db and tables and returns True
     Otherwise returns False indicating the database is already initialized
     """
-
     engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
     if not database_exists(engine.url):
         create_database(engine.url)
@@ -43,6 +42,10 @@ def initialize_database(app: Flask) -> bool:
 
 @app.route("/autocomplete")
 def autocomplete():
+    """
+    Autocomplete the searched school names
+    Returns a list of 10 school names matching the search term
+    """
     term = request.args.get("term", "")
     with db.engine.connect() as conn:
         result = conn.execute(
@@ -65,14 +68,12 @@ def autocomplete():
 def user_scrape_request(id: int, name: str) -> None:
     """
     Scrapes a single university and adds the parquet to the data directory.
+    Input: id from the SCHOOL table in the database, Name for the parquet
 
     *Note: Lacks optimization for multiple threads or object persistence for consecutive requests.
     (i.e. start-up time for the webdriver on each request)*
-
-    Input: id from the SCHOOL table in the database, Name for the parquet
     """
     url = f"https://www.ratemyprofessors.com/search/professors/{id}?q="
-
     scraper = ProfessorScraper()
     html_string = scraper.read_page_source(url, output_file=None)
     df = parse_professors(html_string)
@@ -82,18 +83,13 @@ def user_scrape_request(id: int, name: str) -> None:
     save_to_parquet(df, data_path)
 
 
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
-@app.route("/departments")
-def school():
-    return render_template("departments.html")
-
-
 @app.route("/school_plot")
 def school_plot():
+    """
+    Generates a bar plot for all departments with average professor difficulty, quality,
+    or retake percent for a given school.
+    The plot is returned as a JSON object.
+    """
     # Retrieve the school name from the URL with default ""
     school_name = request.args.get("school_name", "")
     minReviews = request.args.get("min_reviews", 1000)
@@ -169,13 +165,14 @@ def school_plot():
     return jsonify({"graphJSON": graph_json})
 
 
-@app.route("/scrape")
-def scrape_page():
-    return render_template("scrape.html")
-
-
 @app.route("/autocomplete-unscraped")
 def autocomplete_unscraped():
+    """
+    Autocomplete the searched school names
+    Returns a list of 10 school names that have not been scraped
+
+    *(i.e. no instructors in the database)*
+    """
     term = request.args.get("term", "")
     with db.engine.connect() as connection:
         result = connection.execute(
@@ -199,6 +196,12 @@ def autocomplete_unscraped():
 
 @app.route("/scrape_school", methods=["POST"])
 def scrape():
+    """
+    Scrapes a single university and adds the parquet to the data directory and
+    populates the database.
+
+    Input: school_id from the SCHOOL table in the database, Name for the parquet
+    """
     school_name = request.form.get("school_name")
 
     if not school_name:
@@ -227,13 +230,12 @@ def scrape():
     return jsonify({"message": f"Scraped {school_name} with ID {school_id}."})
 
 
-@app.route("/comparison")
-def comparison():
-    return render_template("comparison.html")
-
-
 @app.route("/box_plot")
 def box_plot():
+    """
+    Generates a box plot for the selected metric and department across multiple schools
+    The plot is returned as a JSON object.
+    """
     school_names = request.args.getlist("schools[]")
     department = request.args.get("department")
     metric = request.args.get("metric")
@@ -294,6 +296,10 @@ def box_plot():
 
 @app.route("/departments_for_schools")
 def departments_for_schools():
+    """
+    Returns the list of departments shared between all selected schools.
+    The list is sorted alphabetically.
+    """
     schools = request.args.getlist("schools[]")
     if not schools:
         return jsonify([])
@@ -316,6 +322,26 @@ def departments_for_schools():
         )
         departments = sorted({row[0] for row in result})
     return jsonify(departments)
+
+
+@app.route("/comparison")
+def comparison():
+    return render_template("comparison.html")
+
+
+@app.route("/scrape")
+def scrape_page():
+    return render_template("scrape.html")
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/departments")
+def school():
+    return render_template("departments.html")
 
 
 if __name__ == "__main__":

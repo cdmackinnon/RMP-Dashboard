@@ -133,5 +133,7 @@ class ProfessorScraper:
             json.dump(school_data, f, indent=4)
 
     def quit(self):
-        """Closes the WebDriver."""
+        """
+        Closes the WebDriver
+        """
         self.driver.quit()
