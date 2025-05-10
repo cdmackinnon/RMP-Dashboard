@@ -11,6 +11,8 @@ from flask import request, jsonify
 from src.scraping import ProfessorScraper
 from pathlib import Path
 from src.parse_professors import parse_professors, save_to_parquet
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///rmp.db"
@@ -19,10 +21,14 @@ db = SQLAlchemy(app)
 
 def initialize_database(app: Flask) -> bool:
     """
-    Checks if the schools table exists
-    If not it creates the tables and returns True
+    Checks if the database and tables exists
+    If not it creates the db and tables and returns True
     Otherwise returns False indicating the database is already initialized
     """
+
+    engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+    if not database_exists(engine.url):
+        create_database(engine.url)
     with app.app_context():
         if not db.engine.dialect.has_table(
             db.engine.connect(), "schools"
@@ -319,4 +325,4 @@ if __name__ == "__main__":
             seeding = Seeding(db.engine.connect())
             seeding.initialize_school_names()
             seeding.seed_existing_data()
-    app.run(debug=True, port=8080)
+    app.run(debug=False, port=8080)
