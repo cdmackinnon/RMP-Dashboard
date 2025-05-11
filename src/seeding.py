@@ -59,7 +59,6 @@ class Seeding:
             # Skip erroneous files
             if not file.suffix == ".parquet":
                 continue
-            # TODO check runtime for these extra function calls
             self.seed_file(file)
 
     def seed_file(self, file: Path) -> None:
@@ -73,12 +72,10 @@ class Seeding:
         Seed a Polars Dataframe into the database.
         Fails if the university name is not recognized
         """
-
         # Retrieving schools id's and their corresponding names
         school_names = self.get_school_names()
         # Flipping the id name mapping
         school_id_mapping = {val: int(key) for key, val in school_names.items()}
-
         # Storing the department IDs to avoid duplicate inserts and faster retrieval
         department_cache = {}
         # Storing the instructors to be inserted for bulk insert
@@ -87,7 +84,6 @@ class Seeding:
         for row in df.iter_rows(named=True):
             department_name = row["Department"]
             school_name = row["School"]
-
             # Check the new school name matches a name in the schools table
             school_id = school_id_mapping.get(school_name)
             if not school_id:
@@ -95,7 +91,6 @@ class Seeding:
                     f"Skipping instructor {row['Name']} — unknown school: {school_name}"
                 )
                 continue
-
             # Adding or retrieving the department name and department ID
             if department_name not in department_cache:
                 # Equals 0 if the department already exists
@@ -126,9 +121,7 @@ class Seeding:
 
                 # Store the department ID in the cache for faster access later
                 department_cache[department_name] = department_id
-
             department_id = department_cache[department_name]
-
             # Prep instructors to be added to the database with a dictionary
             # Dictionaries allow for bulk insertions for efficiency
             pending_instructors.append(
