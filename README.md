@@ -43,7 +43,7 @@ uv run app.py
 <img src="/images/Individual University Departments.jpeg" alt="Individual University Departments" width="800"/>
 </div>
 
-- View the metrics of each department at a single university.
+- View the metrics of each department at a university.
 - Filter by the number of reviews a department has.
 - Select which metric to sort by (Quality, Difficulty, Percent of students who said they would retake the class)
 
