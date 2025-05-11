@@ -32,7 +32,8 @@ def initialize_database(app: Flask) -> bool:
         if not db.engine.dialect.has_table(
             db.engine.connect(), "schools"
         ):  # Checking if a table exists
-            with open("db/schema.sql", "r") as f:
+            schema_path = Path(__file__).parent / "db/schema.sql"
+            with open(schema_path, "r") as f:
                 db.session.execute(text(f.read()))
             db.session.commit()
             return True
