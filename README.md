@@ -27,18 +27,27 @@ uv run app.py
 
 ## Pages
 
+### Index
+<img src="/images/Index.jpeg" alt="Index Page" width="800"/>
+
 ### Individual University Departments
+<img src="/images/Individual University Departments.jpeg" alt="Individual University Departments" width="800"/>
+
 - View the metrics of each department at a single university.
 - Filter by the number of reviews a department has.
 - Select which metric to sort by (Quality, Difficulty, Percent of students who said they would retake the class)
 
 ### Compare University Departments
-- Enter several universities to compare. 
-- View the metrics for a shared department. Filters departments by the ones existing at all the selected universities. 
+<img src="/images/Compare University Departments.jpeg" alt="Compare University Departments" width="800"/>
+
+- Enter several universities to compare.
+- View the metrics for a shared department. Filters departments by the ones existing at all the selected universities.
 - Select which metric to sort by (Quality, Difficulty, Percent of students who said they would retake the class)
 - Refresh to clear selections
 
 ### Download Additional Universities
+<img src="/images/Download Additional Universities.jpeg" alt="Download Additional Universities" width="800"/>
+
 1. **Select University**: The user enters a university name in the input field on the dashboard.
 2. **Trigger Scrape**: Upon pressing submit, the app uses Selenium and the Chrome webdriver to scrape professor data from RateMyProfessor.
 3. **Store Data**: The scraped data is then processed using Polars and inserted into a PostgreSQL database.
