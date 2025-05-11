@@ -25,6 +25,13 @@ This project allows users to scrape and visualize professor ratings data from **
 
 ### Quick Start
 
+Use Brew to install and run PostgreSQL.
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install PostgreSQL
+brew services start postgresql
+```
+Clone the app, sync dependencies, and run it.
 ```bash
 git clone https://github.com/cdmackinnon/RMP-Dashboard.git
 cd RMP-Dashboard
