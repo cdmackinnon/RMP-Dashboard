@@ -17,4 +17,5 @@ dependencies = [
     "pylint>=3.3.6",
     "selenium>=4.30.0",
     "tqdm>=4.67.1",
+    "webdriver-manager>=4.0.2",
 ]

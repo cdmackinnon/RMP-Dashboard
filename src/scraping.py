@@ -2,10 +2,12 @@ import json
 from pathlib import Path
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, WebDriverException
-from selenium.webdriver.chrome.webdriver import Options
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 from tqdm import tqdm
 
 
@@ -21,7 +23,12 @@ class ProfessorScraper:
         options = Options()
         if headless:
             options.add_argument("--headless")
-        self.driver = webdriver.Chrome(options=options)
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+            # install the webdriver if not cached already
+        self.driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager().install()), options=options
+        )
 
     def get_total_professors(self) -> int:
         """
