@@ -2,6 +2,11 @@
 
 This project allows users to scrape and visualize professor ratings data from **RateMyProfessors** (RMP) for various universities. It uses **Flask** for the web app, **Selenium** for web scraping, **Plotly** for visualizations, **Polars** for data processing, and **PostgreSQL** for storing the data.
 
+## Demo
+<div align="center">
+  <img src="/images/demo.gif" alt="Demo GIF" width="800"/>
+</div>
+
 ## Features
 
 - **Scrape University Data**: Select a university and scrape professor data from RMP.
@@ -29,17 +34,23 @@ uv run app.py
 ## Pages
 
 ### Index
+<div align="center">
 <img src="/images/Index.jpeg" alt="Index Page" width="800"/>
+</div>
 
 ### Individual University Departments
+<div align="center">
 <img src="/images/Individual University Departments.jpeg" alt="Individual University Departments" width="800"/>
+</div>
 
 - View the metrics of each department at a single university.
 - Filter by the number of reviews a department has.
 - Select which metric to sort by (Quality, Difficulty, Percent of students who said they would retake the class)
 
 ### Compare University Departments
+<div align="center">
 <img src="/images/Compare University Departments.jpeg" alt="Compare University Departments" width="800"/>
+</div>
 
 - Enter several universities to compare.
 - View the metrics for a shared department. Filters departments by the ones existing at all the selected universities.
@@ -47,7 +58,9 @@ uv run app.py
 - Refresh to clear selections
 
 ### Download Additional Universities
+<div align="center">
 <img src="/images/Download Additional Universities.jpeg" alt="Download Additional Universities" width="800"/>
+</div>
 
 1. **Select University**: The user enters a university name in the input field on the dashboard.
 2. **Trigger Scrape**: Upon pressing submit, the app uses Selenium and the Chrome webdriver to scrape professor data from RateMyProfessor.
