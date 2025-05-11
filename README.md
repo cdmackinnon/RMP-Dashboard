@@ -28,6 +28,7 @@ This project allows users to scrape and visualize professor ratings data from **
 ```bash
 git clone https://github.com/cdmackinnon/RMP-Dashboard.git
 cd RMP-Dashboard
+uv sync
 uv run app.py
 ```
 
