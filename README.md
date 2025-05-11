@@ -5,6 +5,7 @@ This project allows users to scrape and visualize professor ratings data from **
 ## Features
 
 - **Scrape University Data**: Select a university and scrape professor data from RMP.
+- **Parse Data**: Isolate key information from the HTML scrapes and create parquet files and dataframes.
 - **Store Data in PostgreSQL**: The data is stored in a PostgreSQL database for fast queries and adding additional information.
 - **Data Visualization**: View department-wide ratings, difficulty, and other statistics through interactive charts.
 - **Autocomplete Search**: Efficient search and selection through university names
