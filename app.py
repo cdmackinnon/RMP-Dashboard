@@ -352,4 +352,4 @@ if __name__ == "__main__":
             seeding = Seeding(db.engine.connect())
             seeding.initialize_school_names()
             seeding.seed_existing_data()
-    app.run(debug=True, port=8080)
+    app.run(debug=False, port=8080)
