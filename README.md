@@ -23,7 +23,7 @@ This project allows users to scrape and visualize professor ratings data from **
 - Brew
 - PostgreSQL database
 
-### Quick Start
+### Steps
 
 Install brew if not already downloaded. (MacOS)
 ```bash
