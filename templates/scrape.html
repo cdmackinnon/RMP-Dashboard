@@ -1,79 +1,32 @@
 {% extends "base.html" %}
-
 {% block head %}
-<script src="https://cdn.tailwindcss.com"></script> <!-- TailwindCSS -->
-<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"> <!-- AOS Animation CSS -->
 {% endblock %}
-
 {% block body %}
-
-<div class="min-h-screen bg-gradient-to-br from-[#60B5FF] to-[#AFDDFF] flex items-center justify-center p-8">
-  <div class="bg-[#FFECDB] p-10 rounded-3xl shadow-2xl w-full max-w-2xl" data-aos="zoom-in">
-    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">📚 Scrape a New University</h2>
-
-    <div class="flex flex-col items-center gap-4">
-      <label for="school-search" class="text-lg font-medium text-gray-700">
-        Select a school to scrape:
-      </label>
-
-      <form onsubmit="event.preventDefault(); triggerScrape();" class="w-full max-w-2xl">
-        <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
-          <input id="school-search" placeholder="Type a university name..."
-            class="border border-gray-300 rounded-full px-6 text-lg h-[52px] w-full bg-[#E5ECF6] transition" />
-          <button type="submit"
-            class="rounded-full px-6 text-lg h-[52px] border border-gray-300 bg-[#E5ECF6] focus:ring-[#FF9149] transition">
-            Download
-          </button>
-        </div>
-      </form>
-      <!-- Loading Wheel -->
-      <div id="loader" class="flex flex-col items-center justify-center mt-6 hidden">
-        <p class="text-gray-600 text-sm mb-2">This may take several minutes…</p>
-        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
-      </div>
+<h2 class="text-4xl font-bold text-center text-gray-800 mb-8">📚 Scrape a New University</h2>
+<div class="flex flex-col items-center gap-4">
+  <label for="school-search" class="text-lg font-medium text-gray-700">
+    Select a school to scrape:
+  </label>
+  <form onsubmit="event.preventDefault(); triggerScrape();" class="w-full max-w-2xl">
+    <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
+      <input id="school-search" placeholder="Type a university name..."
+        class="border border-gray-300 rounded-full px-6 text-lg h-[52px] w-full bg-[#E5ECF6] transition" />
+      <button type="submit"
+        class="rounded-full px-6 text-lg h-[52px] border border-gray-300 bg-[#E5ECF6] focus:ring-[#FF9149] transition">
+        Download
+      </button>
     </div>
+  </form>
+  <!-- Loading Wheel -->
+  <div id="loader" class="flex flex-col items-center justify-center mt-6 hidden">
+    <p class="text-gray-600 text-sm mb-2">This may take several minutes…</p>
+    <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
   </div>
 </div>
+</div>
+</div>
 
-<style>
-  .ui-autocomplete {
-    /* Makes the autocomplete dropdown more rounded */
-    border-radius: 1rem;
-    /* Adds a subtle shadow */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: #E5ECF6;
-  }
-
-  /* Space out this autocompleted schools */
-  .ui-menu-item {
-    padding: 0.25rem;
-    /* Smooth hover effect with a delay on color change */
-    transition: background-color 0.2s ease;
-    border-radius: 1rem;
-    outline: none;
-  }
-
-  /* Sets hover color */
-  .ui-menu-item:hover {
-    border-radius: 1rem;
-    background-color: #FF9149;
-    color: white;
-  }
-
-  /* Removes the default blue hover box */
-  .ui-menu-item-wrapper.ui-state-active {
-    border-radius: 1rem;
-    background-color: #FF9149 !important;
-    color: white !important;
-    outline: none !important;
-    border: none !important;
-  }
-</style>
-
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
-  AOS.init();
-
   $("#school-search").autocomplete({
     source: "/autocomplete-unscraped",
     minLength: 2,
@@ -83,14 +36,11 @@
     }
   });
 
-
   function triggerScrape() {
     const schoolName = $("#school-search").val();
     if (!schoolName) return;
     console.log("Scraping:", schoolName);
-
     $("#loader").removeClass("hidden");
-
     $.post("/scrape_school", { school_name: schoolName })
       .done(function (data) {
         console.log("Scrape successful:", data);

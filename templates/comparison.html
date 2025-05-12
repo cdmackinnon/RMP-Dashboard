@@ -1,92 +1,37 @@
 {% extends "base.html" %}
-
 {% block head %}
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.js -->
-<script src="https://cdn.tailwindcss.com"></script> <!-- TailwindCSS -->
-<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"> <!-- AOS Animation CSS -->
-
 {% endblock %}
-
 {% block body %}
+<h2 class="text-4xl font-bold text-center text-gray-800 mb-8">
+  📊 Compare Departments Across Schools
+</h2>
+<h3 class="text-2xl text-center text-gray-800 mb-8">
+  Enter several school names and select a department to compare their statistics
+</h3>
+<!-- 3 options -->
+<div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
+  <input id="school-select" placeholder="University names"
+    class="border border-gray-300 rounded-full px-6 text-lg h-[52px] w-full max-w-lg bg-[#E5ECF6] transition" />
 
-<div class="min-h-screen bg-gradient-to-br from-[#60B5FF] to-[#AFDDFF] flex items-center justify-center p-8">
-  <!-- Drop shadow and make the box animated on page load   -->
-  <div class="bg-[#FFECDB] p-10 rounded-3xl shadow-2xl w-full" data-aos="zoom-in">
+  <select id="department-select"
+    class="border border-gray-300 rounded-full px-6 text-lg h-[52px] w-full max-w-lg bg-[#E5ECF6] transition">
+  </select>
 
-    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">
-      📊 Compare Departments Across Schools
-    </h2>
-    <h3 class="text-2xl text-center text-gray-800 mb-8">
-      Enter several school names and select a department to compare their statistics
-    </h3>
-    <!-- 3 options -->
-    <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
-      <input id="school-select" placeholder="University names"
-        class="border border-gray-300 rounded-full px-6 text-lg h-[52px] w-full max-w-lg bg-[#E5ECF6] transition" />
-
-      <select id="department-select"
-        class="border border-gray-300 rounded-full px-6 text-lg h-[52px] w-full max-w-lg bg-[#E5ECF6] transition">
-      </select>
-
-
-      <select id="metric-select"
-        class="rounded-full px-6 text-lg h-[52px] border border-gray-300 bg-[#E5ECF6] focus:ring-[#FF9149] transition">
-        <option value="difficulty">Average Difficulty</option>
-        <option value="quality">Average Quality</option>
-        <option value="retake_percent">Would Take Again (%)</option>
-      </select>
-    </div>
-
-    <style>
-      .ui-autocomplete {
-        /* Makes the autocomplete dropdown more rounded */
-        border-radius: 1rem;
-        /* Adds a subtle shadow */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        background-color: #E5ECF6;
-      }
-
-      /* Space out this autocompleted schools */
-      .ui-menu-item {
-        padding: 0.25rem;
-        /* Smooth hover effect with a delay on color change */
-        transition: background-color 0.2s ease;
-        border-radius: 1rem;
-        outline: none;
-      }
-
-      /* Sets hover color */
-      .ui-menu-item:hover {
-        border-radius: 1rem;
-        background-color: #FF9149;
-        color: white;
-      }
-
-      /* Removes the default blue hover box */
-      .ui-menu-item-wrapper.ui-state-active {
-        border-radius: 1rem;
-        background-color: #FF9149 !important;
-        color: white !important;
-        outline: none !important;
-        border: none !important;
-      }
-    </style>
-
-    <div id="plot" class="mt-8"></div>
-
-    <div id="loader" class="flex justify-center mt-6 hidden">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
-    </div>
-  </div>
-</div>
+  <select id="metric-select"
+    class="rounded-full px-6 text-lg h-[52px] border border-gray-300 bg-[#E5ECF6] focus:ring-[#FF9149] transition">
+    <option value="difficulty">Average Difficulty</option>
+    <option value="quality">Average Quality</option>
+    <option value="retake_percent">Would Take Again (%)</option>
+  </select>
 </div>
 
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-<script>
-  // initialize animate on scroll 
-  AOS.init();
-</script>
-
+<div id="plot" class="mt-8"></div>
+<div id="loader" class="flex justify-center mt-6 hidden">
+  <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+</div>
+</div>
+</div>
+</div>
 
 <script>
   $(function () {

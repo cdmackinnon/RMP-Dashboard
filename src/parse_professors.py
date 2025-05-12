@@ -5,11 +5,18 @@ from pathlib import Path
 
 
 def parse_professors_from_path(path: Path) -> pl.DataFrame:
+    """
+    Takes the path of an html file and parses it.
+    Returns a polars dataframe from the parse_professors function.
+    """
     html_content = path.read_text(encoding="utf-8")
     return parse_professors(html_content)
 
 
 def parse_professors(html_content: str) -> pl.DataFrame:
+    """
+    Takes the html content of a page and parses it into a polars dataframe.
+    """
     soup = BeautifulSoup(html_content, "html.parser")
     # Initialize the column-wise lists for a faster polars dataframe
     names, departments, schools = [], [], []
@@ -64,13 +71,17 @@ def parse_professors(html_content: str) -> pl.DataFrame:
 
 
 def save_to_parquet(df, output_file):
-    # Polars fastest file type for saving dataframes
+    """
+    Takes a polars dataframe and saves it to a parquet file.
+    This allows for faster loading and saving of dataframes in smaller file sizes.
+    """
     df.write_parquet(output_file)
 
 
 def parse_all(file_path):
     """
-    Takes the file path of the directory containing the html files and parses all the files
+    Takes the file path of the directory containing html files
+    Parses all the files and saves them to parquet files.
     """
     # glob to get all the files in the directory
     files = [file.name for file in Path(file_path).iterdir()]
