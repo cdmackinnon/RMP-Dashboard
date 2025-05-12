@@ -15,7 +15,7 @@ This project allows users to scrape and visualize professor ratings data from **
 - **Data Visualization**: View department-wide ratings, difficulty, and other statistics through interactive charts.
 - **Autocomplete Search**: Efficient search and selection through university names
 
-## Installation
+## Installation (Without Docker)
 
 ### Prerequisites
 
@@ -49,6 +49,9 @@ cd RMP-Dashboard
 uv sync
 uv run app.py
 ```
+
+> **Tip:** For fewer installations and a quicker startup, use the [Docker branch](https://github.com/cdmackinnon/RMP-Dashboard/tree/Docker?tab=readme-ov-file#installation).
+
 
 ## Pages
 
