@@ -29,6 +29,7 @@ Install brew if not already downloaded. (MacOS)
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
+Then follow the brew steps to add it to path.
 
 Use Brew to install and run PostgreSQL.
 ```bash
