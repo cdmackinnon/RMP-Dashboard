@@ -19,36 +19,26 @@ This project allows users to scrape and visualize professor ratings data from **
 
 ### Prerequisites
 
-- Python 3.12.x
-- Brew
-- PostgreSQL database
+- Docker
 
 ### Quick Start
 
-Install brew if not already downloaded. (MacOS)
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-Then follow the brew steps to add it to path.
+Install Docker
 
-Use Brew to install and run PostgreSQL.
-```bash
-brew install PostgreSQL
-brew services start postgresql
-```
-
-Install UV if not already downloaded.
-```bash
-pip install uv
-```
-
-Clone the app, sync dependencies, and run it.
+Clone the app
 ```bash
 git clone https://github.com/cdmackinnon/RMP-Dashboard.git
 cd RMP-Dashboard
-uv sync
-uv run app.py
 ```
+
+Spin up the docker container
+```
+docker compose up --build
+```
+
+Briefly wait for the container and app to build.
+
+Visit: [http://localhost:8080](http://localhost:8080)
 
 ## Pages
 
