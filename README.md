@@ -31,6 +31,11 @@ git clone https://github.com/cdmackinnon/RMP-Dashboard.git
 cd RMP-Dashboard
 ```
 
+Switch to the Docker branch
+```bash
+git switch docker
+```
+
 Spin up the docker container
 ```
 docker compose up --build
