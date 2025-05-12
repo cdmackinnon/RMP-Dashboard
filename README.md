@@ -25,7 +25,7 @@ This project allows users to scrape and visualize professor ratings data from **
 
 ### Steps
 
-Install brew if not already downloaded. (MacOS)
+Install Homebrew if not already downloaded. (MacOS)
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
